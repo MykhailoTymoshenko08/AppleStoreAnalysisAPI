@@ -3,23 +3,28 @@ import json
 import requests
 from fastapi import HTTPException
 from typing import List
+from dotenv import load_dotenv
+load_dotenv()
 
 def analyze_reviews_with_ai(reviews: List):
     total = len(reviews)
     if total == 0:
         raise HTTPException(status_code=400, detail="Список відгуків порожній")
 
+    # 1. Точна математика
     avg_rating = sum(r.rating for r in reviews) / total
     distribution = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0}
     for r in reviews:
         distribution[str(r.rating)] += 1
 
+    # 2. Формуємо текст для ШІ
     reviews_text = ""
     for i, review in enumerate(reviews, 1):
         reviews_text += f"Відгук {i}:\nРейтинг: {review.rating} ⭐️\nТекст: {review.text}\n\n"
 
+    # 3. Підтягуємо налаштування з .env
     api_key = os.getenv("OPENROUTER_API_KEY")
-    model_name = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.1-8b-instruct:free") # Дефолт, якщо раптом забудеш вказати
+    model_name = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.1-8b-instruct:free") 
 
     if not api_key:
         raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY не знайдено у змінних середовища (.env)")
@@ -27,7 +32,7 @@ def analyze_reviews_with_ai(reviews: List):
     url = "https://openrouter.ai/api/v1/chat/completions"
     payload = {
         "model": model_name,
-        "response_format": {"type": "json_object"},
+        # ПРИБРАЛИ response_format, бо не всі безкоштовні моделі його підтримують
         "messages": [
             {
                 "role": "system",
@@ -35,7 +40,8 @@ def analyze_reviews_with_ai(reviews: List):
                     "Ти Senior AI-аналітик. Проаналізуй відгуки. "
                     "Зроби висновок про 'overall_sentiment' (позитивний, негативний, нейтральний) орієнтуючись на більшість оцінок. "
                     "Знайди 'key_issues' (масив рядків - технічні проблеми) та 'feature_requests' (масив рядків - побажання). "
-                    "Поверни результат СУВОРО у форматі JSON з полями: 'overall_sentiment', 'key_issues', 'feature_requests'."
+                    "Поверни результат СУВОРО у форматі JSON з полями: 'overall_sentiment', 'key_issues', 'feature_requests'. "
+                    "Нічого крім JSON не пиши."
                 )
             },
             {
@@ -55,6 +61,12 @@ def analyze_reviews_with_ai(reviews: List):
         response.raise_for_status()
         
         result_data = response.json()
+        
+        # БРОНЕБІЙНА ПЕРЕВІРКА: чи є 'choices' у відповіді?
+        if "choices" not in result_data:
+            print(f"❌ ПОМИЛКА ВІД OPENROUTER: {json.dumps(result_data, indent=2)}")
+            raise HTTPException(status_code=502, detail="ШІ не повернув очікуваних даних. Перевірте термінал бекенду.")
+
         ai_response_str = result_data['choices'][0]['message']['content']
         ai_response_str = ai_response_str.strip("`").removeprefix("json").strip()
         
@@ -70,6 +82,7 @@ def analyze_reviews_with_ai(reviews: List):
         }
         
     except json.JSONDecodeError:
+        print(f"❌ ШІ ПОВЕРНУВ НЕВАЛІДНИЙ JSON: {ai_response_str}")
         raise HTTPException(status_code=500, detail="ШІ повернув невалідний JSON")
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=502, detail=f"Помилка OpenRouter API: {str(e)}")
