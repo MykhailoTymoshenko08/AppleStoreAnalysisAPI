@@ -1,0 +1,16 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Копіюємо залежності
+COPY package*.json ./
+RUN npm ci
+
+# Копіюємо весь код фронтенду та збираємо проєкт
+COPY . .
+RUN npm run build
+
+EXPOSE 3000
+
+# Запускаємо продакшен-сервер Next.js
+CMD ["npm", "run", "start"]
