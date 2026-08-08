@@ -37,4 +37,4 @@ docker-compose up --build
 
 4. Access the services:
 * Frontend Dashboard: http://localhost:3000
-* Backend API Docs (Swagger): http://localhost:8000/docs
+* Backend API Docs (Swagger): http://localhost:8000/docs 
