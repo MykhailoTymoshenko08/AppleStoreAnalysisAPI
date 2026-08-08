@@ -1,0 +1,6 @@
+.env
+__pychache__/
+node_modules/
+venv/
+DS_Store
+scripts/
