@@ -396,7 +396,7 @@ function CardLabel({ children }: { children: React.ReactNode }) {
 // Small count-up so the numbers feel alive on first paint, not just dropped in.
 function CountUp({ value, decimals = 0 }: { value: number; decimals?: number }) {
   const [display, setDisplay] = useState(0);
-  const frame = useRef<number>();
+  const frame = useRef<number>(0);
 
   useEffect(() => {
     const duration = 600;
