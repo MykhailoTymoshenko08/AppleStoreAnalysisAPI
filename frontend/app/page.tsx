@@ -60,7 +60,7 @@ export default function Home() {
     setLoadingApps(true);
     setError('');
     try {
-      const res = await fetch(`https://obrio-review-api-dj8l.onrender.com/api/apps/search?query=${encodeURIComponent(query)}`);
+      const res = await fetch(`http://localhost:8000/api/apps/search?query=${encodeURIComponent(query)}`);
       const data = await res.json();
       setApps(data);
     } catch (err) {
@@ -79,7 +79,7 @@ export default function Home() {
 
     try {
       // A getting reviews
-      const collectRes = await fetch(`https://obrio-review-api-dj8l.onrender.com/api/reviews/collect?app_id=${app.app_id}&count=100`);
+      const collectRes = await fetch(`http://localhost:8000/api/reviews/collect?app_id=${app.app_id}&count=100`);
       const reviews = await collectRes.json();
 
       if (!Array.isArray(reviews) || reviews.length === 0) {
@@ -87,7 +87,7 @@ export default function Home() {
       }
 
       // B sending reviews to AI
-      const analyzeRes = await fetch('https://obrio-review-api-dj8l.onrender.com/api/reviews/analyze', {
+      const analyzeRes = await fetch('http://localhost:8000/api/reviews/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reviews),
