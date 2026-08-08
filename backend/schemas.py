@@ -1,10 +1,11 @@
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 class AppInfo(BaseModel):
     app_name: str
     developer: str
     app_id: int
+    icon_url: Optional[str] = None
 
 class Review(BaseModel):
     rating: int

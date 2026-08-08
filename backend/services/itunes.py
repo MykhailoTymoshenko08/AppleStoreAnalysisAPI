@@ -20,7 +20,8 @@ def search_app_id(query: str):
                 apps.append({
                     "app_name": result.get("trackName", "Unknown"),
                     "developer": result.get("artistName", "Unknown"),
-                    "app_id": result.get("trackId")
+                    "app_id": result.get("trackId"),
+                    "icon_url": result.get("artworkUrl100")
                 })
             return apps
     except Exception as e:
