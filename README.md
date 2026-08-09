@@ -20,8 +20,8 @@ An AI-powered tool designed to collect user reviews from the Apple Store for any
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd obrio-test-task
+git clone https://github.com/MykhailoTymoshenko08/testTaskOBRIO
+cd testTaskOBRIO
 ```
 
 2. Create a .env file inside the backend/ directory:
@@ -38,3 +38,9 @@ docker-compose up --build
 4. Access the services:
 * Frontend Dashboard: http://localhost:3000
 * Backend API Docs (Swagger): http://localhost:8000/docs 
+
+## Architecture & Tech Stack
+- **Backend:** FastAPI, Pydantic, iTunes RSS & Search APIs.
+- **AI Engine:** OpenRouter API (Nvidia Nemotron / Llama models) for sentiment and key issue analysis.
+- **Frontend:** Next.js (App Router), Tailwind CSS, Recharts for visual dashboards.
+- **Containerization:** Docker & Docker Compose.
