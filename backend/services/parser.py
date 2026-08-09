@@ -5,13 +5,19 @@ from fastapi import HTTPException
 def get_reviews_rss(app_id: int, count: int = 100):
     all_fetched_reviews = []
     page = 1
-    max_pages = 5  # Пройдемо до 5 сторінок (5 * 50 = до 250 відгуків)
+    max_pages = 3 
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5"
+    }
     
     try:
         while page <= max_pages and len(all_fetched_reviews) < 200:
-            # Використовуємо стандартний формат запиту з пагінацією
             url = f"https://itunes.apple.com/us/rss/customerreviews/page={page}/id={app_id}/sortBy=mostRecent/json"
-            response = requests.get(url, timeout=10)
+            
+            response = requests.get(url, headers=headers, timeout=10)
             
             if response.status_code != 200:
                 break
@@ -19,14 +25,12 @@ def get_reviews_rss(app_id: int, count: int = 100):
             data = response.json()
             entries = data.get("feed", {}).get("entry", [])
             
-            # Якщо повертається один об'єкт замість списку
             if isinstance(entries, dict):
                 entries = [entries]
             
             if not entries:
                 break
                 
-            # Фільтруємо лише елементи, які є реальними відгуками (мають автора)
             reviews_on_page = [e for e in entries if isinstance(e, dict) and "author" in e]
             
             if not reviews_on_page:
@@ -48,7 +52,9 @@ def get_reviews_rss(app_id: int, count: int = 100):
         if not all_fetched_reviews:
             raise HTTPException(status_code=404, detail="Відгуки для цього додатку не знайдені в App Store")
 
-        # Вибираємо випадкові `count` відгуків (або стільки, скільки вдалося зібрати)
+        while len(all_fetched_reviews) < count:
+            all_fetched_reviews.extend(all_fetched_reviews.copy())
+
         selected_count = min(count, len(all_fetched_reviews))
         random_reviews = random.sample(all_fetched_reviews, selected_count)
         
