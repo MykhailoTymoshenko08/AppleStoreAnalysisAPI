@@ -4,3 +4,5 @@ node_modules/
 venv/
 DS_Store
 scripts/
+__pycache__/
+*.pyc

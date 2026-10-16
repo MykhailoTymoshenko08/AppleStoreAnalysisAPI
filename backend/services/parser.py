@@ -52,13 +52,10 @@ def get_reviews_rss(app_id: int, count: int = 100):
         if not all_fetched_reviews:
             raise HTTPException(status_code=404, detail="Відгуки для цього додатку не знайдені в App Store")
 
-        while len(all_fetched_reviews) < count:
-            all_fetched_reviews.extend(all_fetched_reviews.copy())
-
+        # never pad with duplicates: copies would skew the average rating and the
+        # distribution, so return fewer reviews than requested if the feed is short
         selected_count = min(count, len(all_fetched_reviews))
-        random_reviews = random.sample(all_fetched_reviews, selected_count)
-        
-        return random_reviews
+        return random.sample(all_fetched_reviews, selected_count)
 
     except Exception as e:
         if isinstance(e, HTTPException):
